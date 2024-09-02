@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState ,useRef} from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-
+// useRef is used to store the reference of the element.
 function App() {
   const [length, setLength] = useState(8);
   const[numAllowed , setNumAllowed] = useState(false);
@@ -13,6 +13,7 @@ function App() {
   //useCallback is a react hook that will prevent the function from being recreated on every render
   // it lets you cache definition b/w rerenders.
 
+  const passwordRef = useRef(null);
   const passwordGenerator =useCallback(() => {
 
     let pass = "";
@@ -29,9 +30,26 @@ function App() {
     setPassword(pass);
   
 
-  }, [length, numAllowed, specialAllowed]);
-// passwordGenerator();
-useEffect(() => { passwordGenerator(); }, [passwordGenerator,length,numAllowed,specialAllowed]);
+  }, [length, numAllowed, specialAllowed,setPassword]);
+
+  const copyPasstoClipboard = useCallback(() => {
+    passwordRef.current?.select();
+    //to select specific range ; passwordRef.current?.setSelectionRange(0, 4);
+        window.navigator.clipboard.writeText(passwordRef.current.value);
+  },[password])
+// the useCallbback cannt be compare witth use effect as in useeffect 
+// the second argument is the dependency array but in usecallback the second argument
+//  is the function that is being cached i.e when there is changes in the values in the arugument it 
+// will be optimised and values wwill be cached and the function will not be recreated again and again.
+  // passwordGenerator();
+useEffect(
+  () => 
+  { passwordGenerator(); }, [passwordGenerator,length,numAllowed,specialAllowed]
+
+);
+
+
+
   return (
     <>
     <div className='flex justify-center'>
@@ -45,11 +63,13 @@ useEffect(() => { passwordGenerator(); }, [passwordGenerator,length,numAllowed,s
         value={password}
         readOnly
         className="text-black bg-white  p-2 my-4 text-center m-5 mr-4 overflow-x-hidden overflow-hidden rounded-lg w-10/12 mt-7 center"
-
+      ref={passwordRef}
 
         
         />
-    <button className='outline-none bg-blue-600 max-w-max rounded-lg self-center p-4'>Copy</button>
+    <button className='outline-none bg-blue-600 max-w-max rounded-lg self-center p-4'
+    onClick={copyPasstoClipboard}
+    >Copy</button>
 
       </div>
       <div className='flex text-sm gap-x-2 p-5 center items-center justify-center'>
@@ -65,7 +85,7 @@ useEffect(() => { passwordGenerator(); }, [passwordGenerator,length,numAllowed,s
           <label className='text-white' >Length : {length}</label>
         </div>
         <div className='p-5'>
-          <input type="checkbox" id="num" onChange={(e) => setNumAllowed(e.target.checked)} />
+          <input type="checkbox" id="num" onChange={(e) => setNumAllowed((prev)=>!prev)} />
           <label htmlFor="num"> Include Numbers</label>
         </div>
         <div className='p-5' >
